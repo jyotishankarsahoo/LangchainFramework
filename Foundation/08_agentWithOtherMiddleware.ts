@@ -1,5 +1,6 @@
-import { createAgent, tool } from "langchain";
+import { createAgent, llmToolSelectorMiddleware, tool } from "langchain";
 import { z } from "zod";
+import "dotenv/config";
 
 const searchTool = tool(
     (query) => {
@@ -39,16 +40,22 @@ const emailTool = tool(
     }
 );
 const agent = createAgent({
-    model: "",
+    model: "claude-sonnet-4-5-20250929",
     tools: [searchTool, weatherTool, emailTool],
-    middleware: [],
+    middleware: [
+        llmToolSelectorMiddleware({
+            model: "qwen2.5:latest",
+            maxTools: 2,
+        }),
+    ],
 });
 
 const response = await agent.invoke({
     messages: [
         {
             role: "human",
-            content: "What is the weather in tokyo and email to jss@apple.com",
+            content:
+                "What is the weather in tokyo and send email to jss@apple.com",
         },
     ],
 });
