@@ -2,6 +2,7 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 import { OpenAIEmbeddings } from "@langchain/openai";
 import { MemoryVectorStore } from "@langchain/classic/vectorstores/memory";
+import { createAgent, dynamicSystemPromptMiddleware } from "langchain";
 import "dotenv/config";
 
 // Load Docs using PDFLoader
@@ -29,14 +30,48 @@ const vectorStore = new MemoryVectorStore(embedding);
 await vectorStore.addDocuments(chunks);
 
 // Test Retrieval
-const results = await vectorStore.similaritySearch(
-    "When was like incorporated?"
-);
+// const results = await vectorStore.similaritySearch(
+//     "When was like incorporated?"
+// );
 const retriever = vectorStore.asRetriever({
     searchType: "mmr",
-    searchKwargs: { fetchK: 1 },
+    searchKwargs: { fetchK: 2 },
 });
-const retriever_response = await retriever.invoke(
-    "When was like incorporated?"
-);
-console.log(retriever_response);
+// const retrieved_context = await retriever.invoke("When was like incorporated?");
+// console.log(retrieved_context);
+
+// Define a Middleware for system prompt
+const ragMiddleware = dynamicSystemPromptMiddleware(async (state) => {
+    // Fetch user query
+    const userQuery = state.messages[0].content;
+    // Make sure userQuery is of String type
+    const query = typeof userQuery === "string" ? userQuery : "";
+    // Invoke retriever to get relevant docs
+    const retrievedDocs = await retriever.invoke(query);
+    console.log(retrievedDocs.length);
+    // Store all Doc Content in a String
+    const docContent = retrievedDocs
+        .map((doc) => {
+            return doc.pageContent;
+        })
+        .join("\n\n");
+    return `You are a Helpful Question and Answering assistance.
+            Use the following context from the document to answer the user's question.
+            If you are not able to find answer in documents, respond saying I don't know.
+            Don't provide made up answer
+            Only answer if you find answer in provided docContent
+            \n\n 
+            ${docContent}`;
+});
+
+const agent = createAgent({
+    model: "gpt-4o",
+    tools: [],
+    middleware: [ragMiddleware],
+});
+
+const response = await agent.invoke({
+    messages: [{ role: "user", content: "When was Nike incorporated?" }],
+});
+
+console.log(response);
