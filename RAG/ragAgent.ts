@@ -80,7 +80,7 @@ const response = await agent.invoke({
         {
             role: "user",
             content:
-                "When was Nike revenue in 2023 and from which town Nike started?",
+                "What was Nike's revenue in 2023 and from which town Nike started?",
         },
     ],
 });

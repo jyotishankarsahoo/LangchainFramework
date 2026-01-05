@@ -25,7 +25,7 @@ const embedding = new OpenAIEmbeddings({ model: "text-embedding-3-large" });
 const vectorDB = new MemoryVectorStore(embedding);
 await vectorDB.addDocuments(chunks);
 
-const retriever = vectorDB.asRetriever({
+export const retriever = vectorDB.asRetriever({
     searchType: "mmr",
     searchKwargs: { fetchK: 1 },
 });
@@ -35,5 +35,5 @@ const relevant_docs = await retriever.invoke(
 );
 console.log(`Relevant Docs Length: ${relevant_docs.length}`);
 console.log(
-    `Page Content: ${relevant_docs.map((doc) => doc.pageContent).join("/n/n")}`
+    `Page Content: ${relevant_docs.map((doc) => doc.pageContent).join("\n\n")}`
 );
