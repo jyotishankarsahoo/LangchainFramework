@@ -35,11 +35,11 @@ const response = await agent.invoke({
         {
             role: "human",
             content:
-                "my card number is 4532-4532-5678-9010, is is master or visa?",
+                "my card number is 4532-1234-5678-9010, is is master or visa?",
         },
         {
             role: "human",
-            content: "Look up my ssn 123-4567-6789",
+            content: "Look up my ssn 123-45-6789",
         },
     ],
 });
