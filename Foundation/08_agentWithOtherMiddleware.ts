@@ -1,4 +1,11 @@
-import { createAgent, llmToolSelectorMiddleware, tool } from "langchain";
+import {
+    createAgent,
+    initChatModel,
+    llmToolSelectorMiddleware,
+    modelFallbackMiddleware,
+    summarizationMiddleware,
+    tool,
+} from "langchain";
 import { z } from "zod";
 import "dotenv/config";
 
@@ -39,14 +46,31 @@ const emailTool = tool(
         }),
     }
 );
+
+const toolSelectionModel = await initChatModel("qwen2.5:latest", {
+    modelProvider: "ollama",
+    baseurl: "http://localhost:11434",
+    max_token: 200,
+});
+const fallbackModel = await initChatModel("qwen3:8b", {
+    modelProvider: "ollama",
+    baseurl: "http://localhost:11434",
+    max_token: 200,
+});
 const agent = createAgent({
     model: "claude-sonnet-4-5-20250929",
     tools: [searchTool, weatherTool, emailTool],
     middleware: [
         llmToolSelectorMiddleware({
-            model: "qwen2.5:latest",
+            model: toolSelectionModel,
             maxTools: 2,
         }),
+        summarizationMiddleware({
+            model: "claude-sonnet-4-5-20250929",
+            maxTokensBeforeSummary: 500,
+            messagesToKeep: 5,
+        }),
+        modelFallbackMiddleware(fallbackModel),
     ],
 });
 
@@ -55,7 +79,7 @@ const response = await agent.invoke({
         {
             role: "human",
             content:
-                "What is the weather in tokyo and send email to jss@apple.com",
+                "What is the weather in tokyo and send email me to jss@apple.com with subject Weather?",
         },
     ],
 });
