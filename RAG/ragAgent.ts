@@ -6,16 +6,22 @@ import { createAgent, dynamicSystemPromptMiddleware } from "langchain";
 import "dotenv/config";
 
 // Load Docs using PDFLoader
-const loader = new PDFLoader("./RAG/docs/nke-10k-2023.pdf");
-const docs = await loader.load();
-console.log(docs.length);
+const allDocs = [];
+const pdfPaths = ["./RAG/docs/nke-10k-2023.pdf"];
+
+for (const path of pdfPaths) {
+    const loader = new PDFLoader(path);
+    const docs = await loader.load();
+    allDocs.push(...docs);
+}
+console.log(allDocs.length);
 
 // Split all Docs in to Chunks
 const splitter = new RecursiveCharacterTextSplitter({
     chunkSize: 1000,
     chunkOverlap: 200,
 });
-const chunks = await splitter.splitDocuments(docs);
+const chunks = await splitter.splitDocuments(allDocs);
 console.log(chunks.length);
 
 // Define Embedding to be used on Chunks
@@ -35,7 +41,7 @@ await vectorStore.addDocuments(chunks);
 // );
 const retriever = vectorStore.asRetriever({
     searchType: "mmr",
-    searchKwargs: { fetchK: 2 },
+    searchKwargs: { fetchK: 1 },
 });
 // const retrieved_context = await retriever.invoke("When was like incorporated?");
 // console.log(retrieved_context);
@@ -48,7 +54,6 @@ const ragMiddleware = dynamicSystemPromptMiddleware(async (state) => {
     const query = typeof userQuery === "string" ? userQuery : "";
     // Invoke retriever to get relevant docs
     const retrievedDocs = await retriever.invoke(query);
-    console.log(retrievedDocs.length);
     // Store all Doc Content in a String
     const docContent = retrievedDocs
         .map((doc) => {
@@ -71,7 +76,13 @@ const agent = createAgent({
 });
 
 const response = await agent.invoke({
-    messages: [{ role: "user", content: "When was Nike incorporated?" }],
+    messages: [
+        {
+            role: "user",
+            content:
+                "When was Nike revenue in 2023 and from which town Nike started?",
+        },
+    ],
 });
 
 console.log(response);
