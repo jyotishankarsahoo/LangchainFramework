@@ -1,5 +1,5 @@
 import { createAgent, dynamicSystemPromptMiddleware } from "langchain";
-import { retriever } from "./ragRetriever";
+import { retriever } from "./01_ragRetriever";
 
 const ragMiddleware = dynamicSystemPromptMiddleware(async (state) => {
     const userMessage = state.messages[0].content;
