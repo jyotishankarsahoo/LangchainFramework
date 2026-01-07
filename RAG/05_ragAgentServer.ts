@@ -51,11 +51,24 @@ const weatherTool = tool(
         }),
     }
 );
+const emailTool = tool(
+    ({ emailID, subject }) => {
+        return `Email sent to ${emailID} with subject: ${subject}`;
+    },
+    {
+        name: "send_email",
+        description: "Send email to some one with specified subject",
+        schema: z.object({
+            emailID: z.string(),
+            subject: z.string(),
+        }),
+    }
+);
 const agent = createAgent({
-    model: "gpt-4o",
-    tools: [weatherTool, retrieverTool],
+    model: "claude-sonnet-4-5-20250929",
+    tools: [weatherTool, retrieverTool, emailTool],
     systemPrompt:
-        "You are a helpful question and answer assistant. You have access to tools that retrieves context from PDF documents & get weather tool.Use the tools to help answer user query ",
+        "You are a helpful question and answer assistant. You have access to tools that retrieves context from PDF documents, get weather tool and send email tool.Use the tools to help answer user query ",
 });
 
 const graph = agent;
