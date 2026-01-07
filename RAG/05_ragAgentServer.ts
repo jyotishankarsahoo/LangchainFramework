@@ -71,4 +71,4 @@ const agent = createAgent({
         "You are a helpful question and answer assistant. You have access to tools that retrieves context from PDF documents, get weather tool and send email tool.Use the tools to help answer user query ",
 });
 
-const graph = agent;
+export const graph = agent;
