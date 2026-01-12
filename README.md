@@ -63,10 +63,10 @@ The `RAG/` directory covers modern RAG system design:
 2. **Set up environment variables:**
     - Copy `.env.example` to `.env` and fill in required values (API keys, etc).
 3. **Run examples:**
-    - Execute any script in `Foundation/` or `RAG/` using `ts-node` or your preferred TypeScript runner.
+    - Execute any script in `Foundation/` or `RAG/` using `tsx` or your preferred TypeScript runner.
     - Example:
         ```sh
-        npx ts-node Foundation/01_simpleAgent.ts
+        npx tsx Foundation/01_simpleAgent.ts
         ```
 4. **Start the RAG Agent Server:**
     ```sh
